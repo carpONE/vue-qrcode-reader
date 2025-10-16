@@ -1,15 +1,32 @@
 <script>
-import BarcodeDetector from "barcode-detector"
+import BarcodeDetector, { setZXingModuleOverrides } from "barcode-detector"
 
 export default {
-  beforeMount() {
+  beforeMount () {
     // if (!('BarcodeDetector' in window)) {
     window.BarcodeDetector = BarcodeDetector
     // }
   },
+  props: {
+    wasmPath: {
+      default: ''
+    }
+  },
+  mounted () {
+    if (this.wasmPath) {
+      setZXingModuleOverrides({
+        locateFile: (path, prefix) => {
+          if (path.endsWith(".wasm")) {
+            return this.wasmPath
+          }
+          return prefix + path;
+        },
+      });
+    }
+  },
 
   methods: {
-    async onDetect(resultPromise) {
+    async onDetect (resultPromise) {
       this.$emit("detect", resultPromise);
 
       try {
